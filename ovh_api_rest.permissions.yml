@@ -1,0 +1,24 @@
+administer ovh_api_rest configuration:
+  title: 'Administer ovh_api_rest configuration'
+  description: 'Optional description.'
+  restrict access: true
+add domain ovh endpoint entities:
+  title: 'Create new Domain Ovh Endpoint entities'
+
+administer domain ovh endpoint entities:
+  title: 'Administer Domain Ovh Endpoint entities'
+  description: 'Allow to access the administration form to configure Domain Ovh Endpoint entities.'
+  restrict access: true
+
+delete domain ovh endpoint entities:
+  title: 'Delete Domain Ovh Endpoint entities'
+
+edit domain ovh endpoint entities:
+  title: 'Edit Domain Ovh Endpoint entities'
+
+view published domain ovh endpoint entities:
+  title: 'View published Domain Ovh Endpoint entities'
+
+view unpublished domain ovh endpoint entities:
+  title: 'View unpublished Domain Ovh Endpoint entities'
+

@@ -1,0 +1,5 @@
+entity.domain_ovh_entity.add_form:
+  route_name: entity.domain_ovh_entity.add_form
+  title: 'Add Domain Ovh Endpoint'
+  appears_on:
+    - entity.domain_ovh_entity.collection
