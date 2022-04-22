@@ -10,7 +10,6 @@ use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Ovh\Api;
-use Stephane888\Debug\debugLog;
 
 /**
  * Defines the Domain Ovh Endpoint entity.
@@ -201,10 +200,10 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
             $entity->save();
             \Drupal::messenger()->addStatus(" Domaine créer ");
           }
-          debugLog::kintDebugDrupal([
-            'body' => $body,
-            'reponse' => $resp
-          ], 'create-domain--' . $this->getsubDomain(), true);
+          // debugLog::kintDebugDrupal([
+          // 'body' => $body,
+          // 'reponse' => $resp
+          // ], 'create-domain--' . $this->getsubDomain(), true);
         }
         catch (\Exception $e) {
           $run_ovh = false;
@@ -214,7 +213,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
             $e->getMessage(),
             $e->getTrace()
           ];
-          debugLog::kintDebugDrupal($db, 'echec-create-domain--' . $this->getsubDomain(), true);
+          // debugLog::kintDebugDrupal($db, 'echec-create-domain--' . $this->getsubDomain(), true);
         }
       // Connexion du domaine à lespace d'hebergement.
       $sub_domain = $this->getsubDomain() . '.' . $this->get('zone_name')->value;
@@ -248,7 +247,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       if ($run_ovh)
         try {
           $result = $OVH->post('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain/' . $sub_domain . '/purgeCache');
-          debugLog::kintDebugDrupal($result, 'purgeCache--' . $sub_domain, true);
+          // debugLog::kintDebugDrupal($result, 'purgeCache--' . $sub_domain, true);
         }
         catch (\Exception $e) {
           $run_ovh = false;
