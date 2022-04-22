@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Ovh\Api;
+use Stephane888\Debug\debugLog;
 
 /**
  * Defines the Domain Ovh Endpoint entity.
@@ -189,37 +190,74 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     //
     if (!$update) {
       \Drupal::messenger()->addStatus(" Creation d'un nouveau sous domaine sur OVH. ");
-      try {
-        // Creation du domaine.
-        $resp = $OVH->post($this->getPath(), $body);
-        if (!empty($resp['id'])) {
-          $entity->set('status', true);
-          $entity->set('domaine_id', $resp['id']);
-          $entity->save();
-          \Drupal::messenger()->addStatus(" Domaine créer ");
+      $run_ovh = true;
+      if ($run_ovh)
+        try {
+          // Creation du domaine.
+          $resp = $OVH->post($this->getPath(), $body);
+          if (!empty($resp['id'])) {
+            $entity->set('status', true);
+            $entity->set('domaine_id', $resp['id']);
+            $entity->save();
+            \Drupal::messenger()->addStatus(" Domaine créer ");
+          }
+          debugLog::kintDebugDrupal([
+            'body' => $body,
+            'reponse' => $resp
+          ], 'create-domain--' . $this->getsubDomain(), true);
         }
-      }
-      catch (\Exception $e) {
-        $entity->set('status', false);
-        $entity->save();
-      }
+        catch (\Exception $e) {
+          $run_ovh = false;
+          $entity->set('status', false);
+          $entity->save();
+          $db = [
+            $e->getMessage(),
+            $e->getTrace()
+          ];
+          debugLog::kintDebugDrupal($db, 'echec-create-domain--' . $this->getsubDomain(), true);
+        }
       // Connexion du domaine à lespace d'hebergement.
-      try {
-        $body = [
-          'cdn' => null,
-          'domain' => $this->getsubDomain() . '.' . $this->get('zone_name')->value,
-          'firewall' => null,
-          'ownLog' => null,
-          'path' => 'www/public/web',
-          'runtimeId' => NULL,
-          'ssl' => true
-        ];
-        $OVH->post('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain', $body);
-        \Drupal::messenger()->addStatus(" Attach domain to host ");
-      }
-      catch (\Exception $e) {
-        //
-      }
+      $sub_domain = $this->getsubDomain() . '.' . $this->get('zone_name')->value;
+      if ($run_ovh)
+        try {
+          $body = [
+            'cdn' => 'active',
+            'domain' => $sub_domain,
+            'firewall' => 'active',
+            'ownLog' => null,
+            'path' => 'www/public/web',
+            'runtimeId' => NULL,
+            'ssl' => true
+          ];
+          $text = $OVH->post('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain', $body);
+          // debugLog::kintDebugDrupal([
+          // 'body' => $body,
+          // 'reponse' => $text
+          // ], 'attach-domain--' . $sub_domain, true);
+          \Drupal::messenger()->addStatus(" Attach domain to host ");
+        }
+        catch (\Exception $e) {
+          $run_ovh = false;
+          // $db = [
+          // $e->getMessage(),
+          // $e->getTrace()
+          // ];
+          // debugLog::kintDebugDrupal($db, 'echec-attach-domain--' . $sub_domain, true);
+        }
+      // Refresh domain
+      if ($run_ovh)
+        try {
+          $result = $OVH->post('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain/' . $sub_domain . '/purgeCache');
+          debugLog::kintDebugDrupal($result, 'purgeCache--' . $sub_domain, true);
+        }
+        catch (\Exception $e) {
+          $run_ovh = false;
+          // $db = [
+          // $e->getMessage(),
+          // $e->getTrace()
+          // ];
+          // debugLog::kintDebugDrupal($db, 'echec-purgeCache--' . $sub_domain, true);
+        }
     }
     else {
       // $resp = $OVH->get($this->getPath());
@@ -307,7 +345,9 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     ])->setDisplayOptions('form', [
       'type' => 'string_textfield',
       'weight' => -4
-    ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setRequired(TRUE);
+    ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setRequired(TRUE)->setConstraints([
+      'UniqueField' => []
+    ]);
     
     $fields['target'] = BaseFieldDefinition::create('string')->setLabel(t('Target (@ip) '))->setSettings([
       'max_length' => 50,
@@ -320,6 +360,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       'type' => 'string_textfield',
       'weight' => -4
     ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setRequired(TRUE);
+    
     $fields['path'] = BaseFieldDefinition::create('string')->setLabel(t(' Path '))->setSettings([
       'max_length' => 50,
       'text_processing' => 0

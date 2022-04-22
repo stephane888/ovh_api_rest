@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Ovh\Api;
+use Stephane888\Debug\debugLog;
 
 /**
  * Form controller for Domain Ovh Endpoint edit forms.
@@ -39,14 +40,16 @@ class DomainOvhEntityForm extends ContentEntityForm {
   public function buildForm(array $form, FormStateInterface $form_state) {
     /* @var \Drupal\ovh_api_rest\Entity\DomainOvhEntity $entity */
     $form = parent::buildForm($form, $form_state);
-    $configs = \Drupal::config('ovh_api_rest.settings');
-    $application_key = $configs->get('api_key');
-    $application_secret = $configs->get('api_secret');
-    $api_endpoint = 'ovh-eu';
-    $consumer_key = $configs->get('consumer_key');
-    $OVH = new Api($application_key, $application_secret, $api_endpoint, $consumer_key);
-    $data = $OVH->get('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain/test855.lesroisdelareno.fr');
-    dump($data);
+    // $configs = \Drupal::config('ovh_api_rest.settings');
+    // $application_key = $configs->get('api_key');
+    // $application_secret = $configs->get('api_secret');
+    // $api_endpoint = 'ovh-eu';
+    // $consumer_key = $configs->get('consumer_key');
+    // $OVH = new Api($application_key, $application_secret, $api_endpoint, $consumer_key);
+    // // $data = $OVH->get('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain/test862.lesroisdelareno.fr');
+    // debugLog::kintDebugDrupal($data, 'list-attachedDomain--test862.lesroisdelareno.fr', true);
+    
+    //
     return $form;
   }
   
