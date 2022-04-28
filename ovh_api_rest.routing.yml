@@ -1,8 +1,8 @@
-ovh_api_rest.example:
-  path: '/ovh-api-rest/example'
+ovh_api_rest.create_domaine:
+  path: '/ovh-api-rest/create-domaine/{entity_id}'
   defaults:
     _title: 'Example'
-    _controller: '\Drupal\ovh_api_rest\Controller\OvhApiRestController::build'
+    _controller: '\Drupal\ovh_api_rest\Controller\OvhApiRestController::CreateDomaine'
   requirements:
     _permission: 'access content'
 

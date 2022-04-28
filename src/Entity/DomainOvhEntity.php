@@ -141,6 +141,10 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     return $this;
   }
   
+  public function getZoneName() {
+    return $this->get('zone_name')->value;
+  }
+  
   /**
    */
   public function getPath() {
@@ -163,114 +167,6 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   
   public function getTtl() {
     return $this->get('ttl')->value;
-  }
-  
-  /**
-   *
-   * {@inheritdoc}
-   * @see \Drupal\Core\Entity\ContentEntityBase::postSave()
-   */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
-    parent::postSave($storage, $update);
-    $entity = $storage->load($this->id());
-    //
-    $configs = \Drupal::config('ovh_api_rest.settings');
-    $application_key = $configs->get('api_key');
-    $application_secret = $configs->get('api_secret');
-    $api_endpoint = 'ovh-eu';
-    $consumer_key = $configs->get('consumer_key');
-    $OVH = new Api($application_key, $application_secret, $api_endpoint, $consumer_key);
-    $body = [
-      'fieldType' => $this->getFieldType(),
-      'subDomain' => $this->getsubDomain(),
-      'target' => $this->getTarget(),
-      'ttl' => $this->getTtl()
-    ];
-    //
-    if (!$update) {
-      \Drupal::messenger()->addStatus(" Creation d'un nouveau sous domaine sur OVH. ");
-      $run_ovh = true;
-      if ($run_ovh)
-        try {
-          // Creation du domaine.
-          $resp = $OVH->post($this->getPath(), $body);
-          if (!empty($resp['id'])) {
-            $entity->set('status', true);
-            $entity->set('domaine_id', $resp['id']);
-            $entity->save();
-            \Drupal::messenger()->addStatus(" Domaine créer ");
-          }
-          // debugLog::kintDebugDrupal([
-          // 'body' => $body,
-          // 'reponse' => $resp
-          // ], 'create-domain--' . $this->getsubDomain(), true);
-        }
-        catch (\Exception $e) {
-          $run_ovh = false;
-          $entity->set('status', false);
-          $entity->save();
-          $db = [
-            $e->getMessage(),
-            $e->getTrace()
-          ];
-          // debugLog::kintDebugDrupal($db, 'echec-create-domain--' . $this->getsubDomain(), true);
-        }
-      // Connexion du domaine à lespace d'hebergement.
-      $sub_domain = $this->getsubDomain() . '.' . $this->get('zone_name')->value;
-      if ($run_ovh)
-        try {
-          $body = [
-            'cdn' => 'active',
-            'domain' => $sub_domain,
-            'firewall' => 'active',
-            'ownLog' => null,
-            'path' => 'www/public/web',
-            'runtimeId' => NULL,
-            'ssl' => true
-          ];
-          $text = $OVH->post('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain', $body);
-          // debugLog::kintDebugDrupal([
-          // 'body' => $body,
-          // 'reponse' => $text
-          // ], 'attach-domain--' . $sub_domain, true);
-          \Drupal::messenger()->addStatus(" Attach domain to host ");
-        }
-        catch (\Exception $e) {
-          $run_ovh = false;
-          // $db = [
-          // $e->getMessage(),
-          // $e->getTrace()
-          // ];
-          // debugLog::kintDebugDrupal($db, 'echec-attach-domain--' . $sub_domain, true);
-        }
-      // Refresh domain
-      if ($run_ovh)
-        try {
-          $result = $OVH->post('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain/' . $sub_domain . '/purgeCache');
-          // debugLog::kintDebugDrupal($result, 'purgeCache--' . $sub_domain, true);
-        }
-        catch (\Exception $e) {
-          $run_ovh = false;
-          // $db = [
-          // $e->getMessage(),
-          // $e->getTrace()
-          // ];
-          // debugLog::kintDebugDrupal($db, 'echec-purgeCache--' . $sub_domain, true);
-        }
-    }
-    else {
-      // $resp = $OVH->get($this->getPath());
-      // $resps = [];
-      // $k = 0;
-      // foreach ($resp as $id) {
-      // $resps[$id] = $OVH->get($this->getPath() . '/' . $id);
-      // $k++;
-      // if ($k > 10)
-      // break;
-      // }
-      // dump($resps);
-      // die();
-    }
   }
   
   /**
