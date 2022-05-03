@@ -169,6 +169,12 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     return $this->get('ttl')->value;
   }
   
+  public function preSave($storage) {
+    // on valide le sous domain:
+    $this->set('sub_domain', preg_replace('/[^a-z0-9\-]/', "", $this->getsubDomain()));
+    parent::preSave($storage);
+  }
+  
   /**
    *
    * {@inheritdoc}
