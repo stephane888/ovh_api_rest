@@ -131,6 +131,9 @@ class OvhApiRestController extends ControllerBase {
               $entity->set('domaine_id', $resp['id']);
               $entity->save();
             }
+            // on applique les modifications du DNS;
+            $endpoind = '/domain/zone/' . $entity->get('zone_name')->value . '/refresh';
+            $resp = $OVH->post($endpoind, $body);
           }
           catch (\Exception $e) {
             $run_ovh = false;
