@@ -170,7 +170,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   }
   
   public function preSave($storage) {
-    // on valide le sous domain:
+    // On valide le sous domain:
     $this->set('sub_domain', preg_replace('/[^a-z0-9\-]/', "", $this->getsubDomain()));
     parent::preSave($storage);
   }
@@ -246,7 +246,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     ])->setDisplayOptions('form', [
       'type' => 'string_textfield',
       'weight' => -4
-    ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setRequired(TRUE)->setConstraints([
+    ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setConstraints([
       'UniqueField' => []
     ]);
     

@@ -1,7 +1,7 @@
 ovh_api_rest.settings_form:
   title: Ovh api rest
   description: Configure Ovh api rest.
-  parent: system.admin_config_system
+  parent: system.admin_config_ui
   route_name: ovh_api_rest.settings_form
   weight: 10
 
@@ -18,3 +18,4 @@ domain_ovh_entity.admin.structure.settings:
   description: 'Configure Domain Ovh Endpoint entities'
   route_name: domain_ovh_entity.settings
   parent: system.admin_structure
+
