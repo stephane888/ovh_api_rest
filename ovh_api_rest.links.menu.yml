@@ -1,5 +1,5 @@
 ovh_api_rest.settings_form:
-  title: Ovh api rest
+  title: 'Vhost Config (OVH)'
   description: Configure Ovh api rest.
   parent: system.admin_config_ui
   route_name: ovh_api_rest.settings_form

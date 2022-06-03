@@ -162,10 +162,20 @@ class OvhApiRestController extends ControllerBase {
           }
       }
       elseif ($conf['type_hosting'] == 'local') {
-        $entity->set('status', true);
-        $entity->set('domaine_id', $resp['id']);
-        $entity->save();
-        return $this->reponse($entity->toArray());
+        if ($run_ovh)
+          try {
+            // on essaie de creer les fichiers pour le vhost.
+            $subDomain = $entity->getsubDomain();
+            $domain = $entity->get('zone_name')->value;
+            $this->GenerateDomainVhost->createDomainOnVPS($domain, $subDomain);
+            return $this->reponse($entity->toArray());
+          }
+          catch (\Exception $e) {
+            return $this->reponse([
+              UtilityError::errorAll($e),
+              $body
+            ], 400, ' impossible de generer le vhost :' . $e->getMessage());
+          }
       }
     }
     return $this->reponse($entity_id, 400, ' Identifiant non reconnu ');
