@@ -152,7 +152,10 @@ class OvhApiRestController extends ControllerBase {
             $subDomain = $entity->getsubDomain();
             $domain = $entity->get('zone_name')->value;
             $this->GenerateDomainVhost->createDomainOnVPS($domain, $subDomain);
-            return $this->reponse($entity->toArray());
+            return $this->reponse([
+              'ovh-api' => $resp,
+              'domain_ovh_entity' => $entity->toArray()
+            ]);
           }
           catch (\Exception $e) {
             return $this->reponse([
