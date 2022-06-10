@@ -22,6 +22,12 @@ class OvhApiRestController extends ControllerBase {
   
   /**
    *
+   * @var array
+   */
+  protected $ovhReponse;
+  
+  /**
+   *
    * @param GenerateDomainVhost $GenerateDomainVhost
    */
   function __construct(GenerateDomainVhost $GenerateDomainVhost) {
@@ -69,6 +75,7 @@ class OvhApiRestController extends ControllerBase {
           try {
             // Creation du domaine.
             $resp = $OVH->post($entity->getPath(), $body);
+            $this->ovhReponse['create-domain'] = $resp;
             if (!empty($resp['id'])) {
               $entity->set('status', true);
               $entity->set('domaine_id', $resp['id']);
@@ -98,7 +105,7 @@ class OvhApiRestController extends ControllerBase {
               'runtimeId' => NULL,
               'ssl' => true
             ];
-            $OVH->post('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain', $body);
+            $this->ovhReponse['link-to-space'] = $OVH->post('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain', $body);
           }
           catch (\Exception $e) {
             $run_ovh = false;
@@ -110,7 +117,7 @@ class OvhApiRestController extends ControllerBase {
         // Refresh domain
         if ($run_ovh)
           try {
-            $OVH->post('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain/' . $sub_domain . '/purgeCache');
+            $this->ovhReponse['refresh'] = $OVH->post('/hosting/web/lesroig.cluster023.hosting.ovh.net/attachedDomain/' . $sub_domain . '/purgeCache');
           }
           catch (\Exception $e) {
             $run_ovh = false;
@@ -126,14 +133,17 @@ class OvhApiRestController extends ControllerBase {
           try {
             // Creation du domaine.
             $resp = $OVH->post($entity->getPath(), $body);
+            $this->ovhReponse['create-domain'] = $resp;
             if (!empty($resp['id'])) {
               $entity->set('status', true);
               $entity->set('domaine_id', $resp['id']);
               $entity->save();
+              // on applique les modifications du DNS;
+              $endpoind = '/domain/zone/' . $entity->get('zone_name')->value . '/refresh';
+              $this->ovhReponse['update-dns'] = $OVH->post($endpoind);
             }
-            // on applique les modifications du DNS;
-            $endpoind = '/domain/zone/' . $entity->get('zone_name')->value . '/refresh';
-            $resp = $OVH->post($endpoind);
+            else
+              $run_ovh = false;
           }
           catch (\Exception $e) {
             $run_ovh = false;
@@ -153,7 +163,8 @@ class OvhApiRestController extends ControllerBase {
             $domain = $entity->get('zone_name')->value;
             $this->GenerateDomainVhost->createDomainOnVPS($domain, $subDomain);
             return $this->reponse([
-              'ovh-api' => $resp,
+              'body' => $body,
+              'ovh-api' => $this->ovhReponse,
               'domain_ovh_entity' => $entity->toArray()
             ]);
           }
