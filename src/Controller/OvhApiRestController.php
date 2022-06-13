@@ -9,6 +9,7 @@ use Ovh\Api;
 use Stephane888\Debug\Utility as UtilityError;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\generate_domain_vps\Services\GenerateDomainVhost;
+use Stephane888\Debug\Repositories\ConfigDrupal;
 
 /**
  * Returns responses for Ovh api rest routes.
@@ -54,8 +55,7 @@ class OvhApiRestController extends ControllerBase {
     $entity = $this->entityTypeManager()->getStorage("domain_ovh_entity")->load($entity_id);
     if ($entity) {
       //
-      $configs = \Drupal::config('ovh_api_rest.settings');
-      $conf = $configs->getRawData();
+      $conf = ConfigDrupal::config('ovh_api_rest.settings');
       $application_key = $conf['api_key'];
       $application_secret = $conf['api_secret'];
       $api_endpoint = 'ovh-eu';
