@@ -286,7 +286,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       'weight' => -4
     ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE);
     
-    $fields['domaine_id'] = BaseFieldDefinition::create('string')->setLabel(t(' Domaine ID '))->setSettings([
+    $fields['domaine_id'] = BaseFieldDefinition::create('string')->setLabel(t(' Domaine ID from OVH '))->setSettings([
       'max_length' => 50,
       'text_processing' => 0
     ])->setDefaultValue('')->setDisplayOptions('view', [
@@ -297,6 +297,11 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       'type' => 'string_textfield',
       'weight' => -4
     ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setReadOnly(true);
+    
+    $fields['domain_id_drupal'] = BaseFieldDefinition::create('entity_reference')->setLabel(t(' Domaine ID from drupal '))->setSetting('target_type', 'domain')->setSetting('handler', 'default')->setDisplayOptions('form', [
+      'type' => 'entity_reference_autocomplete',
+      'weight' => 5
+    ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE);
     
     $fields['status']->setLabel(' Domain creer sur OVH ? ')->setDescription(t(' Permet de determiner si le domaine est disponible sur OVH. '))->setDisplayOptions('form', [
       'type' => 'boolean_checkbox',

@@ -87,8 +87,11 @@ class OvhApiRestController extends ControllerBase {
             $entity->set('status', false);
             $entity->save();
             //
+            $errors = UtilityError::errorAll($e);
+            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            //
             return $this->reponse([
-              UtilityError::errorAll($e),
+              $errors,
               $body
             ], 400, ' impossible de cree le domaine sur OVH :' . $e->getMessage());
           }
@@ -109,8 +112,12 @@ class OvhApiRestController extends ControllerBase {
           }
           catch (\Exception $e) {
             $run_ovh = false;
+            //
+            $errors = UtilityError::errorAll($e);
+            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            //
             return $this->reponse([
-              UtilityError::errorAll($e),
+              $errors,
               $body
             ], 400, " impossible de cree liée le domaine à l'espace d'hebergement :" . $e->getMessage());
           }
@@ -121,8 +128,12 @@ class OvhApiRestController extends ControllerBase {
           }
           catch (\Exception $e) {
             $run_ovh = false;
+            //
+            $errors = UtilityError::errorAll($e);
+            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            //
             return $this->reponse([
-              UtilityError::errorAll($e),
+              $errors,
               $body
             ], 400, ' Echec purgeCache :' . $e->getMessage());
           }
@@ -151,8 +162,11 @@ class OvhApiRestController extends ControllerBase {
             $entity->save();
             $this->getLogger("ovh_api_rest")->warning("Impossible de crrer le domaine sur OVH : <br>" . $e->getMessage());
             //
+            $errors = UtilityError::errorAll($e);
+            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            //
             return $this->reponse([
-              UtilityError::errorAll($e),
+              $errors,
               $body
             ], 400, ' impossible de cree le domaine sur OVH :' . $e->getMessage());
           }
@@ -169,8 +183,12 @@ class OvhApiRestController extends ControllerBase {
             ]);
           }
           catch (\Exception $e) {
+            //
+            $errors = UtilityError::errorAll($e);
+            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            //
             return $this->reponse([
-              UtilityError::errorAll($e),
+              $errors,
               $body
             ], 400, ' impossible de generer le vhost :' . $e->getMessage());
           }
@@ -185,8 +203,12 @@ class OvhApiRestController extends ControllerBase {
             return $this->reponse($entity->toArray());
           }
           catch (\Exception $e) {
+            //
+            $errors = UtilityError::errorAll($e);
+            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            //
             return $this->reponse([
-              UtilityError::errorAll($e),
+              $errors,
               $body
             ], 400, ' impossible de generer le vhost :' . $e->getMessage());
           }
