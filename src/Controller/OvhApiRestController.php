@@ -88,7 +88,7 @@ class OvhApiRestController extends ControllerBase {
             $entity->save();
             //
             $errors = UtilityError::errorAll($e);
-            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
               $errors,
@@ -114,7 +114,7 @@ class OvhApiRestController extends ControllerBase {
             $run_ovh = false;
             //
             $errors = UtilityError::errorAll($e);
-            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
               $errors,
@@ -130,7 +130,7 @@ class OvhApiRestController extends ControllerBase {
             $run_ovh = false;
             //
             $errors = UtilityError::errorAll($e);
-            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
               $errors,
@@ -163,7 +163,7 @@ class OvhApiRestController extends ControllerBase {
             $this->getLogger("ovh_api_rest")->warning("Impossible de crrer le domaine sur OVH : <br>" . $e->getMessage());
             //
             $errors = UtilityError::errorAll($e);
-            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
               $errors,
@@ -185,7 +185,7 @@ class OvhApiRestController extends ControllerBase {
           catch (\Exception $e) {
             //
             $errors = UtilityError::errorAll($e);
-            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
               $errors,
@@ -196,7 +196,7 @@ class OvhApiRestController extends ControllerBase {
       elseif ($conf['type_hosting'] == 'local') {
         if ($run_ovh)
           try {
-            // on essaie de creer les fichiers pour le vhost.
+            // On essaie de creer les fichiers pour le vhost.
             $subDomain = $entity->getsubDomain();
             $domain = $entity->get('zone_name')->value;
             $this->GenerateDomainVhost->createDomainOnVPS($domain, $subDomain);
@@ -205,7 +205,7 @@ class OvhApiRestController extends ControllerBase {
           catch (\Exception $e) {
             //
             $errors = UtilityError::errorAll($e);
-            $this->loggerFactory->get('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
               $errors,
