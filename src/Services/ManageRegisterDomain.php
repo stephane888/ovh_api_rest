@@ -20,7 +20,7 @@ class ManageRegisterDomain extends ControllerBase {
    *
    * @var \Drupal\ovh_api_rest\Entity\DomainOvhEntity
    */
-  protected $entity;
+  protected $entity = null;
   
   /**
    *
@@ -31,13 +31,21 @@ class ManageRegisterDomain extends ControllerBase {
   /**
    *
    * @param string $domainId
+   *        id du domain.
    */
-  function removeDomain($entity_id) {
-    /**
-     *
-     * @var \Drupal\ovh_api_rest\Entity\DomainOvhEntity $entity
-     */
-    $this->entity = $this->entityTypeManager()->getStorage("domain_ovh_entity")->load($entity_id);
+  function removeDomain($domainId) {
+    $query = $this->entityTypeManager()->getStorage("domain_ovh_entity")->getQuery();
+    $query->condition('domain_id_drupal', $domainId);
+    $ids = $query->execute();
+    if (!empty($ids)) {
+      $id = reset($ids);
+      /**
+       *
+       * @var \Drupal\ovh_api_rest\Entity\DomainOvhEntity $entity
+       */
+      $this->entity = $this->entityTypeManager()->getStorage("domain_ovh_entity")->load($id);
+    }
+    
     if ($this->entity && $this->entity->getDomainIdOvh()) {
       //
       $conf = ConfigDrupal::config('ovh_api_rest.settings');
@@ -62,7 +70,7 @@ class ManageRegisterDomain extends ControllerBase {
       }
     }
     else
-      \Drupal::messenger()->addWarning(' entite non trouvé :  ' . $entity_id);
+      \Drupal::messenger()->addWarning(' entite non trouvé :  ' . $domainId);
   }
   
   /**
