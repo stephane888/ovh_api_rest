@@ -74,6 +74,43 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   }
   
   /**
+   * On supprime les données de l'utilisateur (donnee_internet_entity) et
+   * l'enregistrement du domain;
+   *
+   * {@inheritdoc}
+   */
+  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+    parent::preDelete($storage, $entities);
+    /**
+     *
+     * @var \Drupal\ovh_api_rest\Entity\DomainOvhEntity $entity
+     */
+    $entity = reset($entities);
+    if (!empty($entity) && $entity->id()) {
+      // Delete donnee_internet_entity
+      $query = \Drupal::entityTypeManager()->getStorage('donnee_internet_entity')->getQuery();
+      $query->condition('domain_ovh_entity', $entity->id());
+      $ids = $query->execute();
+      if (!empty($ids)) {
+        $id = reset($ids);
+        $donnee_internet_entity = \Drupal::entityTypeManager()->getStorage('donnee_internet_entity')->load($id);
+        if ($donnee_internet_entity)
+          $donnee_internet_entity->delete();
+      }
+      // Delete domain register.
+      $subDomain = $entity->getsubDomain();
+      $domain = $entity->getZoneName();
+      /**
+       *
+       * @var \Drupal\generate_domain_vps\Services\GenerateDomainVhost $ManageRegisterDomain
+       */
+      $ManageRegisterDomain = \Drupal::service('generate_domain_vps.vhosts');
+      $ManageRegisterDomain->removeDomainOnVps($domain, $subDomain);
+      // Delete domain in OVH if necessairy.
+    }
+  }
+  
+  /**
    *
    * {@inheritdoc}
    */
@@ -167,6 +204,10 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   
   public function getTtl() {
     return $this->get('ttl')->value;
+  }
+  
+  public function getDomainIdOvh() {
+    return $this->get('domaine_id')->value;
   }
   
   public function preSave($storage) {

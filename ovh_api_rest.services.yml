@@ -1,0 +1,4 @@
+services:
+  ovh_api_rest.manage:
+    class: Drupal\ovh_api_rest\Services\ManageRegisterDomain
+    arguments: []
