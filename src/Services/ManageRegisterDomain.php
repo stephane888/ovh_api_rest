@@ -4,6 +4,7 @@ namespace Drupal\ovh_api_rest\Services;
 
 use Stephane888\Debug\Repositories\ConfigDrupal;
 use Drupal\generate_domain_vps\Services\GenerateDomainVhost;
+use Stephane888\Debug\Utility as UtilityError;
 use Ovh\Api;
 use Drupal\Core\Controller\ControllerBase;
 
@@ -48,19 +49,34 @@ class ManageRegisterDomain extends ControllerBase {
       
       // On supprime la configuration sur le serveur.
       if ($conf['type_hosting'] == 'vps') {
-        $path = '/domain/zone/' . $this->entity->getZoneName() . '/record/' . $this->entity->getDomainIdOvh();
-        $this->OVH->delete($path);
-        $this->refreshDomain();
+        try {
+          $path = '/domain/zone/' . $this->entity->getZoneName() . '/record/' . $this->entity->getDomainIdOvh();
+          $this->OVH->delete($path);
+          $this->refreshDomain();
+          \Drupal::messenger()->addStatus('domaine suprimer sur ovh ');
+        }
+        catch (\Exception $e) {
+          $errors = UtilityError::errorAll($e);
+          $this->getLogger('ovh_api_rest')->warning('impossible le domaine sur OVH, <br>' . implode("<br>", $errors));
+        }
       }
     }
+    else
+      \Drupal::messenger()->addWarning(' entite non trouvé :  ' . $entity_id);
   }
   
   /**
    * Refresh after post or delete.
    */
   protected function refreshDomain() {
-    $endpoind = '/domain/zone/' . $this->entity->getZoneName() . '/refresh';
-    $this->OVH->post($endpoind);
+    try {
+      $endpoind = '/domain/zone/' . $this->entity->getZoneName() . '/refresh';
+      $this->OVH->post($endpoind);
+    }
+    catch (\Exception $e) {
+      $errors = UtilityError::errorAll($e);
+      $this->getLogger('ovh_api_rest')->warning(' impossible de rafraichir le serveur DNS sur OVH, <br>' . implode("<br>", $errors));
+    }
   }
   
 }
