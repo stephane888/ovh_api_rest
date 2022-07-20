@@ -2,3 +2,7 @@ services:
   ovh_api_rest.manage:
     class: Drupal\ovh_api_rest\Services\ManageRegisterDomain
     arguments: []
+    
+  ovh_api_rest.manage_buy_domain:
+    class: Drupal\ovh_api_rest\Services\ManageBuyDomain
+    arguments: ['@entity_type.manager', '@current_user', '@messenger']

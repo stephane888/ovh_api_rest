@@ -22,3 +22,23 @@ view published domain ovh endpoint entities:
 view unpublished domain ovh endpoint entities:
   title: 'View unpublished Domain Ovh Endpoint entities'
 
+add domain buy entities:
+  title: 'Create new Domain buy entities'
+
+administer domain buy entities:
+  title: 'Administer Domain buy entities'
+  description: 'Allow to access the administration form to configure Domain buy entities.'
+  restrict access: true
+
+delete domain buy entities:
+  title: 'Delete Domain buy entities'
+
+edit domain buy entities:
+  title: 'Edit Domain buy entities'
+
+view published domain buy entities:
+  title: 'View published Domain buy entities'
+
+view unpublished domain buy entities:
+  title: 'View unpublished Domain buy entities'
+

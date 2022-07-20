@@ -19,3 +19,24 @@ entity.domain_ovh_entity.delete_form:
   base_route:  entity.domain_ovh_entity.canonical
   title: Delete
   weight: 10
+# Domain buy routing definition
+domain_buy.settings_tab:
+  route_name: domain_buy.settings
+  title: 'Settings'
+  base_route: domain_buy.settings
+
+entity.domain_buy.canonical:
+  route_name: entity.domain_buy.canonical
+  base_route: entity.domain_buy.canonical
+  title: 'View'
+
+entity.domain_buy.edit_form:
+  route_name: entity.domain_buy.edit_form
+  base_route: entity.domain_buy.canonical
+  title: 'Edit'
+
+entity.domain_buy.delete_form:
+  route_name:  entity.domain_buy.delete_form
+  base_route:  entity.domain_buy.canonical
+  title: Delete
+  weight: 10

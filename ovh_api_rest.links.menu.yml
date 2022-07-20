@@ -19,3 +19,17 @@ domain_ovh_entity.admin.structure.settings:
   route_name: domain_ovh_entity.settings
   parent: system.admin_structure
 
+
+# Domain buy menu items definition
+entity.domain_buy.collection:
+  title: 'Domain buy list'
+  route_name: entity.domain_buy.collection
+  description: 'List Domain buy entities'
+  parent: system.admin_structure
+  weight: 100
+
+domain_buy.admin.structure.settings:
+  title: 'Domain buy settings'
+  description: 'Configure Domain buy entities'
+  route_name: domain_buy.settings
+  parent: system.admin_structure

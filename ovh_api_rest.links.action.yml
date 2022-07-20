@@ -3,3 +3,8 @@ entity.domain_ovh_entity.add_form:
   title: 'Add Domain Ovh Endpoint'
   appears_on:
     - entity.domain_ovh_entity.collection
+entity.domain_buy.add_form:
+  route_name: entity.domain_buy.add_form
+  title: 'Add Domain buy'
+  appears_on:
+    - entity.domain_buy.collection
