@@ -189,6 +189,17 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   }
   
   /**
+   * Permet d'associer un domain à l'entité
+   */
+  public function setDomainIdDrupal($domainId) {
+    $this->set('domain_id_drupal', [
+      [
+        'target_id' => $domainId
+      ]
+    ]);
+  }
+  
+  /**
    */
   public function getFieldType() {
     return $this->get('field_type')->value;

@@ -19,13 +19,17 @@ class DomainOvhEntityAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
+    $access = false;
+    if ($account->id() == $entity->getOwnerId()) {
+      $access = true;
+    }
     /** @var \Drupal\ovh_api_rest\Entity\DomainOvhEntityInterface $entity */
     switch ($operation) {
       
       case 'view':
         
         if (!$entity->isPublished()) {
-          if ($account->id() == $entity->getOwnerId()) {
+          if ($access) {
             return AccessResult::allowed();
           }
           return AccessResult::allowedIfHasPermission($account, 'view unpublished domain ovh endpoint entities');
@@ -38,11 +42,15 @@ class DomainOvhEntityAccessControlHandler extends EntityAccessControlHandler {
         return AccessResult::allowedIfHasPermission($account, 'view published domain ovh endpoint entities');
       
       case 'update':
-        
+        if ($access) {
+          return AccessResult::allowed();
+        }
         return AccessResult::allowedIfHasPermission($account, 'edit domain ovh endpoint entities');
       
       case 'delete':
-        
+        if ($access) {
+          return AccessResult::allowed();
+        }
         return AccessResult::allowedIfHasPermission($account, 'delete domain ovh endpoint entities');
     }
     
