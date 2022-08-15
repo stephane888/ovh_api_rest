@@ -70,7 +70,7 @@ class ManageRegisterDomain extends ControllerBase {
       }
     }
     else
-      \Drupal::messenger()->addWarning(' entite non trouvé :  ' . $domainId);
+      \Drupal::messenger()->addWarning(' entite non trouvé, (domaine pas enregistré chez ovh ?) :  ' . $domainId);
   }
   
   /**
