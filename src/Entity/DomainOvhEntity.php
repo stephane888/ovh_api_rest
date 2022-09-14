@@ -2,14 +2,13 @@
 
 namespace Drupal\ovh_api_rest\Entity;
 
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityPublishedTrait;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\UserInterface;
-use Ovh\Api;
 
 /**
  * Defines the Domain Ovh Endpoint entity.
@@ -199,6 +198,10 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     ]);
   }
   
+  public function getDomainIdDrupal() {
+    return $this->get('domain_id_drupal')->target_id;
+  }
+  
   /**
    */
   public function getFieldType() {
@@ -207,6 +210,10 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   
   public function getsubDomain() {
     return $this->get('sub_domain')->value;
+  }
+  
+  public function setSubDomain($sub_domain) {
+    $this->set('sub_domain', preg_replace('/[^a-z0-9\-]/', "", $sub_domain));
   }
   
   public function getTarget() {
@@ -223,8 +230,14 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   
   public function preSave($storage) {
     // On valide le sous domain:
-    $this->set('sub_domain', preg_replace('/[^a-z0-9\-]/', "", $this->getsubDomain()));
+    $this->setSubDomain($this->getsubDomain());
     parent::preSave($storage);
+    /**
+     * On rend la colonne : domain_id_drupal obligatoire.
+     */
+    if (empty($this->getDomainIdDrupal())) {
+      throw new \Exception(" Le champs DomainIdDrupal est manquant ");
+    }
   }
   
   /**
