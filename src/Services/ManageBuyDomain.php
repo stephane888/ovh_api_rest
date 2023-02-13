@@ -52,7 +52,22 @@ class ManageBuyDomain {
   protected $form_submit = [];
   
   /**
-   * liste des durées
+   * Le domaine qu'on souhaite acheter ou verifier le status.
+   *
+   * @var string
+   */
+  protected $domaine;
+  
+  /**
+   * La durée pour laquette l'utilisateur effectue l'achat.
+   * ( p1m, p1y, p2y ...)
+   *
+   * @var string
+   */
+  protected $periode;
+  
+  /**
+   * liste des durées.
    *
    * @var array
    */
@@ -84,8 +99,15 @@ class ManageBuyDomain {
     }
   }
   
-  public function searchDomain($search, array $form_submit) {
-    $this->form_submit = $form_submit;
+  /**
+   * Permet d'effectuer la recherche d'un domaine.
+   *
+   * @param string $search
+   * @param string $domain
+   * @return boolean[]|boolean
+   */
+  public function searchDomain(string $search, string $domain) {
+    $this->domaine = $domain;
     $this->initApi();
     $this->initCartOvh();
     return $this->getInformation();
@@ -185,7 +207,7 @@ class ManageBuyDomain {
     $result = $this->OVH->post("/order/cart", $body);
     if ($result['cartId']) {
       $values = [
-        'name' => $this->form_submit['domaine'],
+        'name' => $this->domaine,
         'cart_id' => $result['cartId']
       ];
       $this->domain_buy = DomainBuy::create($values);
@@ -197,7 +219,7 @@ class ManageBuyDomain {
   }
   
   /**
-   * --
+   * Si le panier a plus de 24h.
    */
   protected function checkDate() {
     $date = new \DateTime();
@@ -216,7 +238,7 @@ class ManageBuyDomain {
     }
     
     $body = [
-      'domain' => $this->form_submit['domaine']
+      'domain' => $this->domaine
     ];
     $result = $this->OVH->get("/order/cart/$this->cartId/domain", $body);
     // \Stephane888\Debug\debugLog::kintDebugDrupal($result,
@@ -246,7 +268,7 @@ class ManageBuyDomain {
   protected function addDomainInCart() {
     if (!empty($this->domain_buy)) {
       $body = [
-        'domain' => $this->form_submit['domaine'],
+        'domain' => $this->domaine,
         'duration' => $this->form_submit['periode'],
         'offerId' => $this->domain_buy->get('offer_id')->value // @depreciate
       ];

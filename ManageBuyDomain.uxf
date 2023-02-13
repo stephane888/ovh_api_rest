@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="13.3">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>20</x>
+      <y>60</y>
+      <w>150</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>searchDomain
+// Permet d'effectuer la recherche d'un domaine.</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
