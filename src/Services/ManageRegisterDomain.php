@@ -4,7 +4,7 @@ namespace Drupal\ovh_api_rest\Services;
 
 use Stephane888\Debug\Repositories\ConfigDrupal;
 use Drupal\generate_domain_vps\Services\GenerateDomainVhost;
-use Stephane888\Debug\Utility as UtilityError;
+use Stephane888\Debug\ExceptionExtractMessage;
 use Ovh\Api;
 use Drupal\Core\Controller\ControllerBase;
 
@@ -64,7 +64,7 @@ class ManageRegisterDomain extends ControllerBase {
           \Drupal::messenger()->addStatus('domaine suprimer sur ovh ');
         }
         catch (\Exception $e) {
-          $errors = UtilityError::errorAll($e);
+          $errors = ExceptionExtractMessage::errorAll($e);
           $this->getLogger('ovh_api_rest')->warning('impossible le domaine sur OVH, <br>' . implode("<br>", $errors));
         }
       }
@@ -82,7 +82,7 @@ class ManageRegisterDomain extends ControllerBase {
       $this->OVH->post($endpoind);
     }
     catch (\Exception $e) {
-      $errors = UtilityError::errorAll($e);
+      $errors = ExceptionExtractMessage::errorAll($e);
       $this->getLogger('ovh_api_rest')->warning(' impossible de rafraichir le serveur DNS sur OVH, <br>' . implode("<br>", $errors));
     }
   }

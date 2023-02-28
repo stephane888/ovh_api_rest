@@ -6,7 +6,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Component\Serialization\Json;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Ovh\Api;
-use Stephane888\Debug\Utility as UtilityError;
+use Stephane888\Debug\ExceptionExtractMessage;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\generate_domain_vps\Services\GenerateDomainVhost;
 use Stephane888\Debug\Repositories\ConfigDrupal;
@@ -87,7 +87,7 @@ class OvhApiRestController extends ControllerBase {
             $entity->set('status', false);
             $entity->save();
             //
-            $errors = UtilityError::errorAll($e);
+            $errors = ExceptionExtractMessage::errorAll($e);
             $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
@@ -113,7 +113,7 @@ class OvhApiRestController extends ControllerBase {
           catch (\Exception $e) {
             $run_ovh = false;
             //
-            $errors = UtilityError::errorAll($e);
+            $errors = ExceptionExtractMessage::errorAll($e);
             $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
@@ -129,7 +129,7 @@ class OvhApiRestController extends ControllerBase {
           catch (\Exception $e) {
             $run_ovh = false;
             //
-            $errors = UtilityError::errorAll($e);
+            $errors = ExceptionExtractMessage::errorAll($e);
             $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
@@ -162,7 +162,7 @@ class OvhApiRestController extends ControllerBase {
             $entity->save();
             $this->getLogger("ovh_api_rest")->warning("Impossible de crrer le domaine sur OVH : <br>" . $e->getMessage());
             //
-            $errors = UtilityError::errorAll($e);
+            $errors = ExceptionExtractMessage::errorAll($e);
             $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
@@ -184,7 +184,7 @@ class OvhApiRestController extends ControllerBase {
           }
           catch (\Exception $e) {
             //
-            $errors = UtilityError::errorAll($e);
+            $errors = ExceptionExtractMessage::errorAll($e);
             $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
@@ -204,7 +204,7 @@ class OvhApiRestController extends ControllerBase {
           }
           catch (\Exception $e) {
             //
-            $errors = UtilityError::errorAll($e);
+            $errors = ExceptionExtractMessage::errorAll($e);
             $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
             //
             return $this->reponse([
