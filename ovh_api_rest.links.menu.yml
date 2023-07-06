@@ -3,21 +3,22 @@ ovh_api_rest.settings_form:
   description: Configure Ovh api rest.
   parent: system.admin_config_ui
   route_name: ovh_api_rest.settings_form
-  weight: 10
+  weight: 40
 
 # Domain Ovh Endpoint menu items definition
 entity.domain_ovh_entity.collection:
   title: 'Domain Ovh Endpoint list'
   route_name: entity.domain_ovh_entity.collection
   description: 'List Domain Ovh Endpoint entities'
-  parent: system.admin_structure
-  weight: 100
+  parent: system.admin_content
+  weight: 40
 
 domain_ovh_entity.admin.structure.settings:
   title: 'Domain Ovh Endpoint settings'
   description: 'Configure Domain Ovh Endpoint entities'
   route_name: domain_ovh_entity.settings
   parent: system.admin_structure
+  weight: 40
 
 
 # Domain buy menu items definition
@@ -25,11 +26,12 @@ entity.domain_buy.collection:
   title: 'Domain buy list'
   route_name: entity.domain_buy.collection
   description: 'List Domain buy entities'
-  parent: system.admin_structure
-  weight: 100
+  parent: system.admin_content
+  weight: 40
 
 domain_buy.admin.structure.settings:
   title: 'Domain buy settings'
   description: 'Configure Domain buy entities'
   route_name: domain_buy.settings
   parent: system.admin_structure
+  weight: 40
