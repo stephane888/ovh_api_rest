@@ -88,7 +88,7 @@ class OvhApiRestController extends ControllerBase {
             $entity->save();
             //
             $errors = ExceptionExtractMessage::errorAll($e);
-            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . ExceptionExtractMessage::errorAllToString($e));
             //
             return $this->reponse([
               $errors,
@@ -114,7 +114,7 @@ class OvhApiRestController extends ControllerBase {
             $run_ovh = false;
             //
             $errors = ExceptionExtractMessage::errorAll($e);
-            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . ExceptionExtractMessage::errorAllToString($e));
             //
             return $this->reponse([
               $errors,
@@ -130,7 +130,7 @@ class OvhApiRestController extends ControllerBase {
             $run_ovh = false;
             //
             $errors = ExceptionExtractMessage::errorAll($e);
-            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . ExceptionExtractMessage::errorAllToString($e));
             //
             return $this->reponse([
               $errors,
@@ -160,10 +160,9 @@ class OvhApiRestController extends ControllerBase {
             $run_ovh = false;
             $entity->set('status', false);
             $entity->save();
-            $this->getLogger("ovh_api_rest")->warning("Impossible de crrer le domaine sur OVH : <br>" . $e->getMessage());
             //
             $errors = ExceptionExtractMessage::errorAll($e);
-            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . ExceptionExtractMessage::errorAllToString($e));
             //
             return $this->reponse([
               $errors,
@@ -185,7 +184,7 @@ class OvhApiRestController extends ControllerBase {
           catch (\Exception $e) {
             //
             $errors = ExceptionExtractMessage::errorAll($e);
-            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . ExceptionExtractMessage::errorAllToString($e));
             //
             return $this->reponse([
               $errors,
@@ -205,7 +204,7 @@ class OvhApiRestController extends ControllerBase {
           catch (\Exception $e) {
             //
             $errors = ExceptionExtractMessage::errorAll($e);
-            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . implode("<br>", $errors));
+            $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . ExceptionExtractMessage::errorAllToString($e));
             //
             return $this->reponse([
               $errors,
