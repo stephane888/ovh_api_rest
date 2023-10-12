@@ -165,8 +165,8 @@ class OvhApiRestController extends ControllerBase {
             $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . ExceptionExtractMessage::errorAllToString($e));
             //
             return $this->reponse([
-              $errors,
-              $body
+              'body' => $body,
+              'errors' => $errors
             ], 400, ' impossible de cree le domaine sur OVH :' . $e->getMessage());
           }
         // on essaie de creer les fichiers pour le vhost.
@@ -187,10 +187,16 @@ class OvhApiRestController extends ControllerBase {
             $this->getLogger('ovh_api_rest')->critical($e->getMessage() . '<br>' . ExceptionExtractMessage::errorAllToString($e));
             //
             return $this->reponse([
-              $errors,
-              $body
+              'body' => $body,
+              'errors' => $errors
             ], 400, ' impossible de generer le vhost :' . $e->getMessage());
           }
+        else {
+          return $this->reponse([
+            $this->ovhReponse,
+            $body
+          ], 400, ' Erreur lors de la creation du domaine ');
+        }
       }
       elseif ($conf['type_hosting'] == 'local') {
         if ($run_ovh)
