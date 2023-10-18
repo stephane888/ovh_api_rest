@@ -95,8 +95,8 @@ class OvhApiRestController extends ControllerBase {
               $body
             ], 400, ' impossible de cree le domaine sur OVH :' . $e->getMessage());
           }
-        // Connexion du domaine à lespace d'hebergement.
-        $sub_domain = $entity->getsubDomain() . '.' . $entity->get('zone_name')->value;
+        // Connexion du domaine à l'espace d'hebergement.
+        $sub_domain = $entity->getsubDomain() . '.' . $entity->getZoneName();
         if ($run_ovh)
           try {
             $body = [
@@ -173,7 +173,7 @@ class OvhApiRestController extends ControllerBase {
         if ($run_ovh)
           try {
             $subDomain = $entity->getsubDomain();
-            $domain = $entity->get('zone_name')->value;
+            $domain = $entity->getZoneName();
             $this->GenerateDomainVhost->createDomainOnVPS($domain, $subDomain);
             return $this->reponse([
               'body' => $body,
@@ -203,7 +203,7 @@ class OvhApiRestController extends ControllerBase {
           try {
             // On essaie de creer les fichiers pour le vhost.
             $subDomain = $entity->getsubDomain();
-            $domain = $entity->get('zone_name')->value;
+            $domain = $entity->getZoneName();
             $this->GenerateDomainVhost->createDomainOnVPS($domain, $subDomain);
             return $this->reponse($entity->toArray());
           }
