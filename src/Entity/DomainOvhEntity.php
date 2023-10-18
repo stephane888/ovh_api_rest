@@ -57,10 +57,16 @@ use Drupal\user\UserInterface;
  * )
  */
 class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterface {
-
+  
   use EntityChangedTrait;
   use EntityPublishedTrait;
-
+  
+  /**
+   *
+   * @var array
+   */
+  protected static $config = [];
+  
   /**
    *
    * {@inheritdoc}
@@ -71,7 +77,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       'user_id' => \Drupal::currentUser()->id()
     ];
   }
-
+  
   /**
    * On supprime les données de l'utilisateur (donnee_internet_entity) et
    * l'enregistrement du domain;
@@ -108,7 +114,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       // Delete domain in OVH if necessairy.
     }
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -116,7 +122,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   public function getName() {
     return $this->get('name')->value;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -125,7 +131,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     $this->set('name', $name);
     return $this;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -133,7 +139,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -142,7 +148,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     $this->set('created', $timestamp);
     return $this;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -150,7 +156,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   public function getOwner() {
     return $this->get('user_id')->entity;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -158,7 +164,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   public function getOwnerId() {
     return $this->get('user_id')->target_id;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -167,7 +173,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     $this->set('user_id', $uid);
     return $this;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -176,17 +182,17 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     $this->set('user_id', $account->id());
     return $this;
   }
-
+  
   public function getZoneName() {
-    return $this->get('zone_name')->value;
+    return !empty(self::getConfig()['zone_name']) ? self::getConfig()['zone_name'] : 'example.com';
   }
-
+  
   /**
    */
   public function getPath() {
-    return $this->get('path')->value;
+    return !empty(self::getConfig()['path']) ? self::getConfig()['path'] : '/domain/zone/example.com/record';
   }
-
+  
   /**
    * Permet d'associer un domain à l'entité
    */
@@ -197,17 +203,20 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       ]
     ]);
   }
-
+  
   public function getDomainIdDrupal() {
     return $this->get('domain_id_drupal')->target_id;
   }
-
+  
   /**
+   * Cest une mauvaise id de sauvagarder les données identiques en BD.
+   *
+   * @return string
    */
   public function getFieldType() {
-    return $this->get('field_type')->value;
+    return !empty(self::getConfig()['field_type']) ? self::getConfig()['field_type'] : 'A';
   }
-
+  
   /**
    * La valeur resultante contient les caractaires de a-z0-9
    *
@@ -216,7 +225,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   public function getsubDomain() {
     return $this->get('sub_domain')->value;
   }
-
+  
   /**
    * La valeur resultante contient les caractaires de a-z0-9
    *
@@ -225,19 +234,29 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   public function setSubDomain($sub_domain) {
     $this->set('sub_domain', preg_replace('/[^a-z0-9\-]/', "", $sub_domain));
   }
-
+  
+  /**
+   * Cest une mauvaise id de sauvagarder les données identiques en BD.
+   *
+   * @return number
+   */
   public function getTarget() {
-    return $this->get('target')->value;
+    return !empty(self::getConfig()['target']) ? self::getConfig()['target'] : '';
   }
-
+  
+  /**
+   * Cest une mauvaise id de sauvagarder les données identiques en BD.
+   *
+   * @return int
+   */
   public function getTtl() {
-    return $this->get('ttl')->value;
+    return !empty(self::getConfig()['ttl']) ? self::getConfig()['ttl'] : 0;
   }
-
+  
   public function getDomainIdOvh() {
     return $this->get('domaine_id')->value;
   }
-
+  
   public function preSave($storage) {
     // On valide le sous domain:
     $this->setSubDomain($this->getsubDomain());
@@ -249,17 +268,28 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       throw new \Exception(" Le champs DomainIdDrupal est manquant ");
     }
   }
-
+  
+  /**
+   * Charge la configuration.
+   *
+   * @return array|number|mixed|\Drupal\Component\Render\MarkupInterface|string
+   */
+  public static function getConfig() {
+    if (!self::$config)
+      self::$config = \Drupal::config('ovh_api_rest.settings')->getRawData();
+    return self::$config;
+  }
+  
   /**
    *
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
-
+    
     // Add the published field.
     $fields += static::publishedBaseFieldDefinitions($entity_type);
-
+    
     $fields['user_id'] = BaseFieldDefinition::create('entity_reference')->setLabel(t('Authored by'))->setDescription(t('The user ID of author of the Domain Ovh Endpoint entity.'))->setRevisionable(TRUE)->setSetting('target_type', 'user')->setSetting('handler', 'default')->setDisplayOptions('view', [
       'label' => 'hidden',
       'type' => 'author',
@@ -274,7 +304,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
         'placeholder' => ''
       ]
     ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE);
-
+    
     $fields['name'] = BaseFieldDefinition::create('string')->setLabel(t(" Identification du domaine "))->setSettings([
       'max_length' => 50,
       'text_processing' => 0
@@ -286,19 +316,21 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       'type' => 'string_textfield',
       'weight' => -4
     ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setRequired(TRUE);
-
-    $fields['zone_name'] = BaseFieldDefinition::create('string')->setLabel(t('zoneName'))->setSettings([
-      'max_length' => 50,
-      'text_processing' => 0
-    ])->setDefaultValue('')->setDisplayOptions('view', [
-      'label' => 'above',
-      'type' => 'string',
-      'weight' => -4
-    ])->setDisplayOptions('form', [
-      'type' => 'string_textfield',
-      'weight' => -4
-    ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setRequired(TRUE);
-
+    
+    // $fields['zone_name'] =
+    // BaseFieldDefinition::create('string')->setLabel(t('zoneName'))->setSettings([
+    // 'max_length' => 50,
+    // 'text_processing' => 0
+    // ])->setDefaultValue('')->setDisplayOptions('view', [
+    // 'label' => 'above',
+    // 'type' => 'string',
+    // 'weight' => -4
+    // ])->setDisplayOptions('form', [
+    // 'type' => 'string_textfield',
+    // 'weight' => -4
+    // ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view',
+    // TRUE)->setRequired(TRUE);
+    
     $fields['field_type'] = BaseFieldDefinition::create('string')->setLabel(t('fieldType'))->setSettings([
       'max_length' => 50,
       'text_processing' => 0
@@ -310,7 +342,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       'type' => 'string_textfield',
       'weight' => -4
     ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setRequired(TRUE);
-
+    
     $fields['sub_domain'] = BaseFieldDefinition::create('string')->setLabel(t('subDomain'))->setSettings([
       'max_length' => 50,
       'text_processing' => 0
@@ -324,43 +356,50 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setConstraints([
       'UniqueField' => []
     ]);
-
-    $fields['target'] = BaseFieldDefinition::create('string')->setLabel(t('Target (@ip) '))->setSettings([
-      'max_length' => 50,
-      'text_processing' => 0
-    ])->setDefaultValue('')->setDisplayOptions('view', [
-      'label' => 'above',
-      'type' => 'string',
-      'weight' => -4
-    ])->setDisplayOptions('form', [
-      'type' => 'string_textfield',
-      'weight' => -4
-    ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setRequired(TRUE);
-
-    $fields['path'] = BaseFieldDefinition::create('string')->setLabel(t(' Path '))->setSettings([
-      'max_length' => 50,
-      'text_processing' => 0
-    ])->setDefaultValue('')->setDisplayOptions('view', [
-      'label' => 'above',
-      'type' => 'string',
-      'weight' => -4
-    ])->setDisplayOptions('form', [
-      'type' => 'string_textfield',
-      'weight' => -4
-    ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setRequired(TRUE);
-
-    $fields['ttl'] = BaseFieldDefinition::create('string')->setLabel(t(' Ttl '))->setSettings([
-      'max_length' => 50,
-      'text_processing' => 0
-    ])->setDefaultValue('')->setDisplayOptions('view', [
-      'label' => 'above',
-      'type' => 'string',
-      'weight' => -4
-    ])->setDisplayOptions('form', [
-      'type' => 'string_textfield',
-      'weight' => -4
-    ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE);
-
+    
+    // $fields['target'] =
+    // BaseFieldDefinition::create('string')->setLabel(t('Target (@ip)
+    // '))->setSettings([
+    // 'max_length' => 50,
+    // 'text_processing' => 0
+    // ])->setDefaultValue('')->setDisplayOptions('view', [
+    // 'label' => 'above',
+    // 'type' => 'string',
+    // 'weight' => -4
+    // ])->setDisplayOptions('form', [
+    // 'type' => 'string_textfield',
+    // 'weight' => -4
+    // ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view',
+    // TRUE)->setRequired(TRUE);
+    
+    // $fields['path'] = BaseFieldDefinition::create('string')->setLabel(t('
+    // Path '))->setSettings([
+    // 'max_length' => 50,
+    // 'text_processing' => 0
+    // ])->setDefaultValue('')->setDisplayOptions('view', [
+    // 'label' => 'above',
+    // 'type' => 'string',
+    // 'weight' => -4
+    // ])->setDisplayOptions('form', [
+    // 'type' => 'string_textfield',
+    // 'weight' => -4
+    // ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view',
+    // TRUE)->setRequired(TRUE);
+    
+    // $fields['ttl'] = BaseFieldDefinition::create('string')->setLabel(t(' Ttl
+    // '))->setSettings([
+    // 'max_length' => 50,
+    // 'text_processing' => 0
+    // ])->setDefaultValue('')->setDisplayOptions('view', [
+    // 'label' => 'above',
+    // 'type' => 'string',
+    // 'weight' => -4
+    // ])->setDisplayOptions('form', [
+    // 'type' => 'string_textfield',
+    // 'weight' => -4
+    // ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view',
+    // TRUE);
+    
     $fields['domaine_id'] = BaseFieldDefinition::create('string')->setLabel(t(' Domaine ID from OVH '))->setSettings([
       'max_length' => 50,
       'text_processing' => 0
@@ -372,22 +411,22 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       'type' => 'string_textfield',
       'weight' => -4
     ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setReadOnly(true);
-
+    
     $fields['domain_id_drupal'] = BaseFieldDefinition::create('entity_reference')->setLabel(t(' Domaine ID from drupal '))->setSetting('target_type', 'domain')->setSetting('handler', 'default')->setDisplayOptions('form', [
       'type' => 'entity_reference_autocomplete',
       'weight' => 5
     ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE);
-
+    
     $fields['status']->setLabel(' Domain creer sur OVH ? ')->setDescription(t(' Permet de determiner si le domaine est disponible sur OVH. '))->setDisplayOptions('form', [
       'type' => 'boolean_checkbox',
       'weight' => -3
     ])->setDefaultValue(false)->setReadOnly(true);
-
+    
     $fields['created'] = BaseFieldDefinition::create('created')->setLabel(t('Created'))->setDescription(t('The time that the entity was created.'));
-
+    
     $fields['changed'] = BaseFieldDefinition::create('changed')->setLabel(t('Changed'))->setDescription(t('The time that the entity was last edited.'));
-
+    
     return $fields;
   }
-
+  
 }

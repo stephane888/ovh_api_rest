@@ -77,14 +77,20 @@ class SettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t(" path "),
       '#default_value' => $config->get('path'),
-      "#description" => 'example: /domain/zone/{lesroisdelareno.fr}/record',
+      "#description" => 'example: /domain/zone/{example.fr}/record',
       '#required' => true
     ];
     $form['path'] = [
       '#type' => 'textfield',
       '#title' => $this->t(" path "),
       '#default_value' => $config->get('path'),
-      "#description" => 'example: /domain/zone/{lesroisdelareno.fr}/record',
+      "#description" => 'example: /domain/zone/{example.fr}/record',
+      '#required' => true
+    ];
+    $form['ttl'] = [
+      '#type' => 'number',
+      '#title' => $this->t(" ttl "),
+      '#default_value' => $config->get('ttl'),
       '#required' => true
     ];
     $form['type_hosting'] = [
@@ -123,10 +129,11 @@ class SettingsForm extends ConfigFormBase {
     $config->set('api_key', $form_state->getValue('api_key'));
     $config->set('api_secret', $form_state->getValue('api_secret'));
     $config->set('consumer_key', $form_state->getValue('consumer_key'));
-    $config->set('zone_name', $form_state->getValue('zone_name'));
-    $config->set('field_type', $form_state->getValue('field_type'));
-    $config->set('target', $form_state->getValue('target'));
-    $config->set('path', $form_state->getValue('path'));
+    $config->set('zone_name', trim($form_state->getValue('zone_name')));
+    $config->set('field_type', trim($form_state->getValue('field_type')));
+    $config->set('target', trim($form_state->getValue('target')));
+    $config->set('path', trim($form_state->getValue('path')));
+    $config->set('ttl', trim($form_state->getValue('ttl')));
     $config->set('type_hosting', $form_state->getValue('type_hosting'));
     $config->save();
     parent::submitForm($form, $form_state);
