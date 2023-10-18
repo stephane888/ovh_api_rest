@@ -331,17 +331,19 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     // ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view',
     // TRUE)->setRequired(TRUE);
     
-    $fields['field_type'] = BaseFieldDefinition::create('string')->setLabel(t('fieldType'))->setSettings([
-      'max_length' => 50,
-      'text_processing' => 0
-    ])->setDefaultValue('')->setDisplayOptions('view', [
-      'label' => 'above',
-      'type' => 'string',
-      'weight' => -4
-    ])->setDisplayOptions('form', [
-      'type' => 'string_textfield',
-      'weight' => -4
-    ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view', TRUE)->setRequired(TRUE);
+    // $fields['field_type'] =
+    // BaseFieldDefinition::create('string')->setLabel(t('fieldType'))->setSettings([
+    // 'max_length' => 50,
+    // 'text_processing' => 0
+    // ])->setDefaultValue('')->setDisplayOptions('view', [
+    // 'label' => 'above',
+    // 'type' => 'string',
+    // 'weight' => -4
+    // ])->setDisplayOptions('form', [
+    // 'type' => 'string_textfield',
+    // 'weight' => -4
+    // ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view',
+    // TRUE)->setRequired(TRUE);
     
     $fields['sub_domain'] = BaseFieldDefinition::create('string')->setLabel(t('subDomain'))->setSettings([
       'max_length' => 50,
