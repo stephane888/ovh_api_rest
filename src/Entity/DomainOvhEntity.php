@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\user\UserInterface;
+use Stephane888\Debug\Repositories\ConfigDrupal;
 
 /**
  * Defines the Domain Ovh Endpoint entity.
@@ -184,7 +185,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   }
   
   public function getZoneName() {
-    return !empty(self::getConfig()['zone_name']) ? self::getConfig()['zone_name'] : 'example.com';
+    return !empty(self::getConfig()['zone_name']) ? self::getConfig()['zone_name'] : '';
   }
   
   /**
@@ -204,6 +205,10 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     ]);
   }
   
+  /**
+   *
+   * @return string
+   */
   public function getDomainIdDrupal() {
     return $this->get('domain_id_drupal')->target_id;
   }
@@ -253,10 +258,19 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     return !empty(self::getConfig()['ttl']) ? self::getConfig()['ttl'] : 0;
   }
   
+  /**
+   *
+   * @return array
+   */
   public function getDomainIdOvh() {
     return $this->get('domaine_id')->value;
   }
   
+  /**
+   *
+   * {@inheritdoc}
+   * @see \Drupal\Core\Entity\ContentEntityBase::preSave()
+   */
   public function preSave($storage) {
     // On valide le sous domain:
     $this->setSubDomain($this->getsubDomain());
@@ -276,7 +290,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
    */
   public static function getConfig() {
     if (!self::$config)
-      self::$config = \Drupal::config('ovh_api_rest.settings')->getRawData();
+      self::$config = ConfigDrupal::config('ovh_api_rest.settings');
     return self::$config;
   }
   
@@ -331,6 +345,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     // ])->setDisplayConfigurable('form', TRUE)->setDisplayConfigurable('view',
     // TRUE)->setRequired(TRUE);
     
+    //
     // $fields['field_type'] =
     // BaseFieldDefinition::create('string')->setLabel(t('fieldType'))->setSettings([
     // 'max_length' => 50,

@@ -59,8 +59,7 @@ class OvhApiRestController extends ControllerBase {
     $target = $conf['target'];
     $path = $conf['path'];
     $zone_name = $conf['zone_name'];
-    
-    $ttl = $conf['ttl'];
+    // $ttl = $conf['ttl'];
     $OVH = new Api($application_key, $application_secret, $api_endpoint, $consumer_key);
     /**
      *
