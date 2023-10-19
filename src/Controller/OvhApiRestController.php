@@ -10,6 +10,8 @@ use Stephane888\Debug\ExceptionExtractMessage;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\generate_domain_vps\Services\GenerateDomainVhost;
 use Stephane888\Debug\Repositories\ConfigDrupal;
+use Stephane888\DrupalUtility\HttpResponse;
+use Ovh\Exceptions\ApiException;
 
 /**
  * Returns responses for Ovh api rest routes.
@@ -45,6 +47,69 @@ class OvhApiRestController extends ControllerBase {
   }
   
   /**
+   * Permet de tester la creation de Domaine.
+   */
+  public function TestCreateDomaine($subdomaine) {
+    $conf = ConfigDrupal::config('ovh_api_rest.settings');
+    $application_key = $conf['api_key'];
+    $application_secret = $conf['api_secret'];
+    $api_endpoint = 'ovh-eu';
+    $consumer_key = $conf['consumer_key'];
+    $field_type = $conf['field_type'];
+    $target = $conf['target'];
+    $path = $conf['path'];
+    $zone_name = $conf['zone_name'];
+    
+    $ttl = $conf['ttl'];
+    $OVH = new Api($application_key, $application_secret, $api_endpoint, $consumer_key);
+    /**
+     *
+     * @var \GuzzleHttp\Client $GuzzleHttp
+     */
+    $GuzzleHttp = $OVH->getHttpClient();
+    $body = [
+      'fieldType' => $field_type,
+      'subDomain' => $subdomaine,
+      'target' => $target
+    ];
+    try {
+      $result = $OVH->post($path, $body);
+      /**
+       * Le refreash semble pas fonctionner, mais cela est un probleme au niveau
+       * du SDK.
+       *
+       * @var string $endpoind
+       */
+      $endpoind = '/v1/domain/zone/' . $zone_name . '/refresh';
+      $r2 = $OVH->post($endpoind);
+      $data = [
+        'body' => $body,
+        'result' => $result,
+        'refresh' => $r2
+      ];
+      return HttpResponse::response($data);
+    }
+    catch (ApiException $e) {
+      return HttpResponse::response(ExceptionExtractMessage::errorAll($e), 400, $e->getMessage());
+    }
+    catch (\Exception $e) {
+      $db = [
+        'body' => $body,
+        'exception' => ExceptionExtractMessage::errorAll($e)
+      ];
+      return HttpResponse::response($db, 400, $e->getMessage());
+    }
+    
+    // dump($conf);
+    // $body = [
+    // 'fieldType' => $entity->getFieldType(),
+    // 'subDomain' => $entity->getsubDomain(),
+    // 'target' => $entity->getTarget()
+    // // 'ttl' => $entity->getTtl()
+    // ];
+  }
+  
+  /**
    * Builds the response.
    */
   public function CreateDomaine($entity_id) {
@@ -60,12 +125,14 @@ class OvhApiRestController extends ControllerBase {
       $application_secret = $conf['api_secret'];
       $api_endpoint = 'ovh-eu';
       $consumer_key = $conf['consumer_key'];
+      $target = $conf['target'];
+      $field_type = $conf['field_type'];
+      $zone_name = $conf['zone_name'];
       $OVH = new Api($application_key, $application_secret, $api_endpoint, $consumer_key);
       $body = [
-        'fieldType' => $entity->getFieldType(),
+        'fieldType' => $field_type,
         'subDomain' => $entity->getsubDomain(),
-        'target' => $entity->getTarget(),
-        'ttl' => $entity->getTtl()
+        'target' => $target
       ];
       //
       $run_ovh = true;
@@ -96,7 +163,7 @@ class OvhApiRestController extends ControllerBase {
             ], 400, ' impossible de cree le domaine sur OVH :' . $e->getMessage());
           }
         // Connexion du domaine à l'espace d'hebergement.
-        $sub_domain = $entity->getsubDomain() . '.' . $entity->getZoneName();
+        $sub_domain = $entity->getsubDomain() . '.' . $zone_name;
         if ($run_ovh)
           try {
             $body = [
@@ -140,7 +207,8 @@ class OvhApiRestController extends ControllerBase {
         return $this->reponse($entity->toArray());
       }
       elseif ($conf['type_hosting'] == 'vps') {
-        if ($run_ovh)
+        if ($run_ovh) {
+          // Creation du domaine.
           try {
             // Creation du domaine.
             $resp = $OVH->post($entity->getPath(), $body);
@@ -149,9 +217,6 @@ class OvhApiRestController extends ControllerBase {
               $entity->set('status', true);
               $entity->set('domaine_id', $resp['id']);
               $entity->save();
-              // on applique les modifications du DNS;
-              $endpoind = '/domain/zone/' . $entity->getZoneName() . '/refresh';
-              $this->ovhReponse['update-dns'] = $OVH->post($endpoind);
             }
             else
               $run_ovh = false;
@@ -169,11 +234,24 @@ class OvhApiRestController extends ControllerBase {
               'errors' => $errors
             ], 400, ' impossible de cree le domaine sur OVH :' . $e->getMessage());
           }
+          // Refresh du DNS
+          try {
+            if ($run_ovh) {
+              $endpoind = '/domain/zone/' . $zone_name . '/refresh';
+              $this->ovhReponse['update-dns'] = $OVH->post($endpoind);
+            }
+          }
+          catch (\Exception $e) {
+            // ( si l'erreur se produit ici, on va continuer et
+            // notifier l'utilisateur ).
+            $this->getLogger('ovh_api_rest')->critical('ERROR lors du refresh du domaine :: ' . $e->getMessage() . '<br>' . ExceptionExtractMessage::errorAllToString($e));
+          }
+        }
         // on essaie de creer les fichiers pour le vhost.
         if ($run_ovh)
           try {
             $subDomain = $entity->getsubDomain();
-            $domain = $entity->getZoneName();
+            $domain = $zone_name;
             $this->GenerateDomainVhost->createDomainOnVPS($domain, $subDomain);
             return $this->reponse([
               'body' => $body,
@@ -203,7 +281,7 @@ class OvhApiRestController extends ControllerBase {
           try {
             // On essaie de creer les fichiers pour le vhost.
             $subDomain = $entity->getsubDomain();
-            $domain = $entity->getZoneName();
+            $domain = $zone_name;
             $this->GenerateDomainVhost->createDomainOnVPS($domain, $subDomain);
             return $this->reponse($entity->toArray());
           }

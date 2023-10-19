@@ -5,6 +5,14 @@ ovh_api_rest.create_domaine:
     _controller: '\Drupal\ovh_api_rest\Controller\OvhApiRestController::CreateDomaine'
   requirements:
     _permission: 'access content'
+    
+ovh_api_rest.test_create_domaine:
+  path: '/ovh-api-rest/create-test-domaine/{subdomaine}'
+  defaults:
+    _title: 'Example'
+    _controller: '\Drupal\ovh_api_rest\Controller\OvhApiRestController::TestCreateDomaine'
+  requirements:
+    _permission: 'access content'
 
 ovh_api_rest.settings_form:
   path: '/admin/config/system/ovh-api-rest'
