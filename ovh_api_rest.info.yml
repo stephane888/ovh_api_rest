@@ -1,6 +1,7 @@
 name: Ovh api rest
 type: module
-description: The description.
+description: Allows you to purchase and register a domain from ovh via the OVH API.
 package: Custom
-core: 8.x
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9 || ^10
+dependencies:
+  - generate_domain_vps:generate_domain_vps
