@@ -79,6 +79,7 @@ class ManageBuyDomain {
    * @var string
    */
   protected $cartId;
+  protected const maxPrice = 12;
   
   function __construct(EntityTypeManagerInterface $entity_type_manager, AccountProxy $user, MessengerInterface $messenger) {
     $this->entityTypeManager = $entity_type_manager;
@@ -241,8 +242,7 @@ class ManageBuyDomain {
       'domain' => $this->domaine
     ];
     $result = $this->OVH->get("/order/cart/$this->cartId/domain", $body);
-    // \Stephane888\Debug\debugLog::kintDebugDrupal($result,
-    // 'getInformation-ovh', true);
+    \Stephane888\Debug\debugLog::kintDebugDrupal($result, 'getInformation-ovh', true);
     if (!empty($result[0])) {
       $result = $result[0];
       if ($result['action'] == 'create') {
@@ -254,8 +254,10 @@ class ManageBuyDomain {
         $result['status_domain'] = true;
         return $result;
       }
+      elseif ($result['action'] == 'transfer')
+        throw new \Exception("Oups, le nom domaine $this->domaine n'est plus disponible ", 440);
       else
-        throw new \Exception('nom de domaine non disponible');
+        throw new \Exception(" Le nom de domaine non disponible ", 440);
     }
     else
       return [
@@ -305,10 +307,20 @@ class ManageBuyDomain {
     }
   }
   
+  /**
+   * Recupere le nom de domaine.
+   *
+   * @param array $prices
+   * @throws \exception
+   * @return array
+   */
   protected function getTotalPrice($prices) {
     foreach ($prices as $value) {
       if ($value['label'] == 'TOTAL') {
-        return $value['price']['value'];
+        if ($value['price']['value'] <= self::maxPrice) {
+          return $value['price']['value'];
+        }
+        throw new \exception("Nous sommes desolé, mais vous ne pouvez pas acheté ce domaine via notre interface, car il ne necessite des verifications supplementaires.", 440);
       }
     }
     throw new \exception("impossible d'obtenir le total du prix");
