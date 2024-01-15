@@ -17,6 +17,7 @@ use Ovh\Exceptions\ApiException;
  * Returns responses for Ovh api rest routes.
  */
 class OvhApiRestController extends ControllerBase {
+  
   /**
    *
    * @var GenerateDomainVhost
