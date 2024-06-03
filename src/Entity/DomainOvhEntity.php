@@ -94,7 +94,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
      */
     foreach ($entities as $entity) {
       // On verifie si on peut supprimer l'entité.
-      if ($entity->getTypeSite() != 'test' && $entity->getTypeSite() == "" && $entity->getTypeSite() === NULL)
+      if (!($entity->getTypeSite() == 'test' || $entity->getTypeSite() === NULL))
         throw new \Exception("Vous ne pouvez pas supprimer cette entité, car il est protegé. Type site :" . $entity->getTypeSite());
       if (!empty($entity) && $entity->id()) {
         // Delete donnee_internet_entity
