@@ -75,6 +75,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
     parent::preCreate($storage_controller, $values);
     $values += [
+      'type_site' => 'test',
       'user_id' => \Drupal::currentUser()->id()
     ];
   }
@@ -91,29 +92,37 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
      *
      * @var \Drupal\ovh_api_rest\Entity\DomainOvhEntity $entity
      */
-    $entity = reset($entities);
-    if (!empty($entity) && $entity->id()) {
-      // Delete donnee_internet_entity
-      $query = \Drupal::entityTypeManager()->getStorage('donnee_internet_entity')->getQuery();
-      $query->condition('domain_ovh_entity', $entity->id());
-      $ids = $query->execute();
-      if (!empty($ids)) {
-        $id = reset($ids);
-        $donnee_internet_entity = \Drupal::entityTypeManager()->getStorage('donnee_internet_entity')->load($id);
-        if ($donnee_internet_entity)
-          $donnee_internet_entity->delete();
+    foreach ($entities as $entity) {
+      // On verifie si on peut supprimer l'entité.
+      if ($entity->getTypeSite() != 'test' && $entity->getTypeSite() == "" && $entity->getTypeSite() === NULL)
+        throw new \Exception("Vous ne pouvez pas supprimer cette entité, car il est protegé. Type site :" . $entity->getTypeSite());
+      if (!empty($entity) && $entity->id()) {
+        // Delete donnee_internet_entity
+        $query = \Drupal::entityTypeManager()->getStorage('donnee_internet_entity')->getQuery()->accessCheck();
+        $query->condition('domain_ovh_entity', $entity->id());
+        $ids = $query->execute();
+        if (!empty($ids)) {
+          $id = reset($ids);
+          $donnee_internet_entity = \Drupal::entityTypeManager()->getStorage('donnee_internet_entity')->load($id);
+          if ($donnee_internet_entity)
+            $donnee_internet_entity->delete();
+        }
+        // Delete domain register.
+        $subDomain = $entity->getsubDomain();
+        $domain = $entity->getZoneName();
+        /**
+         *
+         * @var \Drupal\generate_domain_vps\Services\GenerateDomainVhost $ManageRegisterDomain
+         */
+        $ManageRegisterDomain = \Drupal::service('generate_domain_vps.vhosts');
+        $ManageRegisterDomain->removeDomainOnVps($domain, $subDomain);
+        // Delete domain in OVH if necessairy.
       }
-      // Delete domain register.
-      $subDomain = $entity->getsubDomain();
-      $domain = $entity->getZoneName();
-      /**
-       *
-       * @var \Drupal\generate_domain_vps\Services\GenerateDomainVhost $ManageRegisterDomain
-       */
-      $ManageRegisterDomain = \Drupal::service('generate_domain_vps.vhosts');
-      $ManageRegisterDomain->removeDomainOnVps($domain, $subDomain);
-      // Delete domain in OVH if necessairy.
     }
+  }
+  
+  public function getTypeSite() {
+    return $this->get('type_site')->value;
   }
   
   /**
@@ -438,6 +447,22 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       'type' => 'boolean_checkbox',
       'weight' => -3
     ])->setDefaultValue(false)->setReadOnly(true);
+    
+    /**
+     * Seule les sites:test sont supprimées apres une durée.
+     * Les autres sites ne sont pas supprimés.
+     */
+    $fields['type_site'] = BaseFieldDefinition::create('list_string')->setLabel(" Type de site web ")->setDisplayOptions('form', [
+      'type' => 'options_buttons',
+      'weight' => 5
+    ])->setDisplayConfigurable('view', TRUE)->setDisplayConfigurable('form', true)->setSettings([
+      'allowed_values' => [
+        'test' => 'Test (sont supprimé apres une durée) ', //
+        'client' => "client",
+        'demo' => 'Demo',
+        'privee' => 'privee'
+      ]
+    ])->setRequired(true)->setDefaultValue('tache')->setRequired(TRUE);
     
     $fields['created'] = BaseFieldDefinition::create('created')->setLabel(t('Created'))->setDescription(t('The time that the entity was created.'));
     

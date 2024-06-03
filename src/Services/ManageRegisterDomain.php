@@ -25,7 +25,7 @@ class ManageRegisterDomain extends ManageBase {
    *        id du domain.
    */
   function removeDomain($domainId) {
-    $query = $this->entityTypeManager()->getStorage("domain_ovh_entity")->getQuery();
+    $query = $this->entityTypeManager()->getStorage("domain_ovh_entity")->getQuery()->accessCheck();
     $query->condition('domain_id_drupal', $domainId);
     $ids = $query->execute();
     if (!empty($ids)) {
