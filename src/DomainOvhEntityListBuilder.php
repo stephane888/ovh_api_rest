@@ -43,7 +43,30 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
     $row['name'] = Link::createFromRoute($entity->label(), 'entity.domain_ovh_entity.edit_form', [
       'domain_ovh_entity' => $entity->id()
     ]);
-    $row['domain_id_drupal'] = $entity->getDomainIdDrupal();
+    $domainId = $entity->getDomainIdDrupal();
+    $data = [
+      'data' => []
+    ];
+    $data['data'][] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#value' => $domainId
+    ];
+    $domain = \Drupal\domain\Entity\Domain::load($domainId);
+    if ($domain) {
+      $uri = $domain->getScheme() . $domain->getHostname();
+      $data['data'][] = [
+        '#type' => 'link',
+        '#title' => $domain->label(),
+        '#url' => \Drupal\Core\Url::fromUri($uri),
+        '#options' => [
+          'attributes' => [
+            'target' => '_blank'
+          ]
+        ]
+      ];
+    }
+    $row['domain_id_drupal'] = $data;
     $row['type_site'] = $entity->getTypeSite();
     $row['user_id'] = $entity->getOwner()->getDisplayName();
     return $row + parent::buildRow($entity);
