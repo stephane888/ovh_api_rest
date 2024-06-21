@@ -88,9 +88,21 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
     $request = $this->getRequest();
     $contain = $request->query->get("contain");
     $limit = !empty($request->query->get("limit")) ? $request->query->get("limit") : $this->limit;
+    $type_site = !empty($request->query->get("type_site")) ? $request->query->get("type_site") : null;
+    /**
+     *
+     * @var \Drupal\Core\Entity\Query\Sql\Query $query
+     */
     $query = $this->getStorage()->getQuery()->accessCheck(TRUE)->sort($this->entityType->getKey('id'));
     if (!empty($contain))
       $query->condition("domain_id_drupal", "%$contain%", "LIKE");
+    // --
+    if ($type_site && $type_site != 'all')
+      if ($type_site == 'null')
+        $query->condition('type_site', NULL, 'IS NULL');
+      else {
+        $query->condition('type_site', $type_site, '=');
+      }
     
     // Only add the pager if a limit is specified.
     if ($limit) {
