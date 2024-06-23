@@ -19,15 +19,17 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
   protected $requestStack;
+  protected $entity_count = 0;
   
   /**
    *
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['id'] = $this->t('Domain Ovh Endpoint ID');
+    $header['id'] = $this->t('Entity ID');
     $header['name'] = $this->t('Name');
-    $header['domain_id_drupal'] = 'domain_id_drupal';
+    $header['domain_id_drupal'] = 'Domain id';
+    $header['domain_alias'] = 'Domain alias';
     $header['type_site'] = $this->t('Type site');
     $header['user_id'] = $this->t('Author');
     return $header + parent::buildHeader();
@@ -39,6 +41,7 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
    */
   public function buildRow(EntityInterface $entity) {
     /* @var \Drupal\ovh_api_rest\Entity\DomainOvhEntity $entity */
+    ++$this->entity_count;
     $row['id'] = $entity->id();
     $row['name'] = Link::createFromRoute($entity->label(), 'entity.domain_ovh_entity.edit_form', [
       'domain_ovh_entity' => $entity->id()
@@ -67,6 +70,7 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
       ];
     }
     $row['domain_id_drupal'] = $data;
+    $row['domain_alias'] = [];
     $row['type_site'] = $entity->getTypeSite();
     $row['user_id'] = $entity->getOwner()->getDisplayName();
     return $row + parent::buildRow($entity);
@@ -76,6 +80,12 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
     $build = parent::render();
     $build['form_filter'] = \Drupal::formBuilder()->getForm('\Drupal\wb_optimisation\Form\FilterForm');
     $build['form_filter']['#weight'] = -10;
+    $build['count_rows'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'h3',
+      '#value' => "Données affichés  : " . $this->entity_count . '/' . $this->getEntityIds(TRUE),
+      '#weight' => -9
+    ];
     return $build;
   }
   
@@ -84,7 +94,7 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
    *
    * @return array An array of entity IDs.
    */
-  protected function getEntityIds() {
+  protected function getEntityIds($countAll = false) {
     $request = $this->getRequest();
     $contain = $request->query->get("contain");
     $limit = !empty($request->query->get("limit")) ? $request->query->get("limit") : $this->limit;
@@ -105,8 +115,11 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
       }
     
     // Only add the pager if a limit is specified.
+    if ($countAll) {
+      return $query->count()->execute();
+    }
     if ($limit) {
-      $query->pager(0, $limit);
+      $query->pager($limit);
     }
     return $query->execute();
   }
