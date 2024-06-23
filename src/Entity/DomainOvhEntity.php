@@ -163,22 +163,6 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
             break;
         }
       }
-      /**
-       * On desinstalle le theme.
-       *
-       * @var \Drupal\Core\Extension\ThemeInstaller $ThemeInstaller
-       */
-      try {
-        $ThemeInstaller = \Drupal::service('theme_installer');
-        $theme_list = [
-          $domainId => $domainId
-        ];
-        $ThemeInstaller->uninstall($theme_list);
-      }
-      catch (\Exception $e) {
-        \Drupal::messenger()->addWarning(" Le theme n'a pas pu etre desintallé : " . $domainId);
-        \Drupal::logger('generate_style_theme')->warning(" Le theme n'a pas pu etre desintallé : " . $domainId);
-      }
       // Suppression de tous les renseignements en BD au niveau de la table
       // config.
       /**
