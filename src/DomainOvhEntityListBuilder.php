@@ -106,7 +106,7 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
     
     // Only add the pager if a limit is specified.
     if ($limit) {
-      $query->pager($limit);
+      $query->pager(0, $limit);
     }
     return $query->execute();
   }

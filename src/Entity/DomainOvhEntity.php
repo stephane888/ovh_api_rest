@@ -88,6 +88,12 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
    */
   public static function preDelete(EntityStorageInterface $storage, array $entities) {
     parent::preDelete($storage, $entities);
+    // Array entity to delete.
+    $entitiesIdDelete = [
+      'config_theme_entity',
+      'domain'
+    ];
+    $field_access = \Drupal\domain_access\DomainAccessManagerInterface::DOMAIN_ACCESS_FIELD;
     /**
      *
      * @var \Drupal\ovh_api_rest\Entity\DomainOvhEntity $entity
@@ -118,6 +124,73 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
         $ManageRegisterDomain->removeDomainOnVps($domain, $subDomain);
         // Delete domain in OVH if necessairy.
       }
+      
+      /**
+       * @ à faire : le module devrait supprimer les fichiers du theme.
+       * On supprime le contenu en relation avec ce theme.
+       */
+      $domainId = $entity->getDomainIdDrupal();
+      $entityTypeManager = \Drupal::entityTypeManager();
+      
+      /**
+       * On retire les enregistrements sur le serveurs ( vhost ).
+       *
+       * @var \Drupal\ovh_api_rest\Services\ManageRegisterDomain $ManageRegisterDomain
+       */
+      $ManageRegisterDomain = \Drupal::service('ovh_api_rest.manage');
+      $ManageRegisterDomain->removeDomain($domainId);
+      
+      //
+      foreach ($entitiesIdDelete as $entity_type_id) {
+        switch ($entity_type_id) {
+          case 'config_theme_entity':
+            $query = $entityTypeManager->getStorage($entity_type_id)->getQuery()->accessCheck(False);
+            $query->condition('hostname', $domainId);
+            $ids = $query->execute();
+            if (!empty($ids)) {
+              $entitiesDelete = $entityTypeManager->getStorage($entity_type_id)->loadMultiple($ids);
+              $entityTypeManager->getStorage($entity_type_id)->delete($entitiesDelete);
+            }
+            break;
+          case 'domain':
+            $query = $entityTypeManager->getStorage($entity_type_id)->getQuery()->accessCheck(False);
+            $query->condition('id', $domainId, '=');
+            $ids = $query->execute();
+            if (!empty($ids)) {
+              $entitiesDelete = $entityTypeManager->getStorage($entity_type_id)->loadMultiple($ids);
+              $entityTypeManager->getStorage($entity_type_id)->delete($entitiesDelete);
+            }
+            break;
+        }
+      }
+      /**
+       * On desinstalle le theme.
+       *
+       * @var \Drupal\Core\Extension\ThemeInstaller $ThemeInstaller
+       */
+      try {
+        $ThemeInstaller = \Drupal::service('theme_installer');
+        $theme_list = [
+          $domainId => $domainId
+        ];
+        $ThemeInstaller->uninstall($theme_list);
+      }
+      catch (\Exception $e) {
+        \Drupal::messenger()->addWarning(" Le theme n'a pas pu etre desintallé : " . $domainId);
+        \Drupal::logger('generate_style_theme')->warning(" Le theme n'a pas pu etre desintallé : " . $domainId);
+      }
+      // Suppression de tous les renseignements en BD au niveau de la table
+      // config.
+      /**
+       * Connection $Connection
+       */
+      $Connection = \Drupal::database();
+      /**
+       * \Drupal\Core\Database\Query\Delete $query;
+       */
+      $query = $Connection->delete("config");
+      $query->condition("name", "%$domainId%", "LIKE");
+      $query->execute();
     }
   }
   
@@ -182,6 +255,11 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
   public function setOwnerId($uid) {
     $this->set('user_id', $uid);
     return $this;
+  }
+  
+  public function isDeletable(): bool {
+    $typeSite = $this->getTypeSite();
+    return ($typeSite == 'test' || empty($typeSite)) ?? false;
   }
   
   /**
@@ -462,7 +540,7 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
         'demo' => 'Demo',
         'privee' => 'privee'
       ]
-    ])->setRequired(true)->setDefaultValue('tache')->setRequired(TRUE);
+    ])->setRequired(true)->setDefaultValue('test');
     
     $fields['created'] = BaseFieldDefinition::create('created')->setLabel(t('Created'))->setDescription(t('The time that the entity was created.'));
     
