@@ -20,13 +20,14 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
    */
   protected $requestStack;
   protected $entity_count = 0;
+  protected $entityStorageDomainAlias;
   
   /**
    *
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['id'] = $this->t('Entity ID');
+    $header['id'] = '#ID';
     $header['name'] = $this->t('Name');
     $header['domain_id_drupal'] = 'Domain id';
     $header['domain_alias'] = 'Domain alias';
@@ -70,10 +71,41 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
       ];
     }
     $row['domain_id_drupal'] = $data;
-    $row['domain_alias'] = [];
+    $DomainsAlias = $this->getEntityStorageDomainAlias()->loadByProperties([
+      'domain_id' => $domainId
+    ]);
+    $datas = [
+      'data' => []
+    ];
+    if ($DomainsAlias) {
+      foreach ($DomainsAlias as $DomainAlias) {
+        /**
+         *
+         * @var \Drupal\domain_alias\Entity\DomainAlias $DomainAlias
+         */
+        $datas['data'][] = [
+          '#type' => 'html_tag',
+          '#tag' => 'div',
+          '#value' => $DomainAlias->label()
+        ];
+      }
+    }
+    
+    $row['domain_alias'] = $datas;
     $row['type_site'] = $entity->getTypeSite();
     $row['user_id'] = $entity->getOwner()->getDisplayName();
     return $row + parent::buildRow($entity);
+  }
+  
+  /**
+   *
+   * @return \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected function getEntityStorageDomainAlias() {
+    if (!$this->entityStorageDomainAlias) {
+      $this->entityStorageDomainAlias = \Drupal::entityTypeManager()->getStorage('domain_alias');
+    }
+    return $this->entityStorageDomainAlias;
   }
   
   public function render() {
@@ -118,10 +150,13 @@ class DomainOvhEntityListBuilder extends EntityListBuilder {
     if ($countAll) {
       return $query->count()->execute();
     }
+    
     if ($limit) {
       $query->pager($limit);
     }
-    return $query->execute();
+    
+    $ids = $query->execute();
+    return $ids;
   }
   
   /**

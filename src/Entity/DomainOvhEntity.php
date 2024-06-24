@@ -90,7 +90,6 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
     parent::preDelete($storage, $entities);
     // Array entity to delete.
     $entitiesIdDelete = [
-      'config_theme_entity',
       'domain'
     ];
     $field_access = \Drupal\domain_access\DomainAccessManagerInterface::DOMAIN_ACCESS_FIELD;
@@ -143,15 +142,6 @@ class DomainOvhEntity extends ContentEntityBase implements DomainOvhEntityInterf
       //
       foreach ($entitiesIdDelete as $entity_type_id) {
         switch ($entity_type_id) {
-          case 'config_theme_entity':
-            $query = $entityTypeManager->getStorage($entity_type_id)->getQuery()->accessCheck(False);
-            $query->condition('hostname', $domainId);
-            $ids = $query->execute();
-            if (!empty($ids)) {
-              $entitiesDelete = $entityTypeManager->getStorage($entity_type_id)->loadMultiple($ids);
-              $entityTypeManager->getStorage($entity_type_id)->delete($entitiesDelete);
-            }
-            break;
           case 'domain':
             $query = $entityTypeManager->getStorage($entity_type_id)->getQuery()->accessCheck(False);
             $query->condition('id', $domainId, '=');
